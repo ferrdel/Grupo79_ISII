@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VehiculoController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PromocionController;
 
 // 1. Redirigir la raíz directamente al panel de administración
 Route::get('/', function () {
@@ -14,4 +16,11 @@ Route::prefix('admin')->group(function () {
     Route::post('/vehiculos', [VehiculoController::class, 'RegistrarVehiculo'])->name('vehiculos.RegistrarVehiculo');
     Route::put('/vehiculos/{nro_patente}', [VehiculoController::class, 'ActualizarVehiculo'])->name('vehiculos.ActualizarVehiculo');
     Route::delete('/vehiculos/{nro_patente}', [VehiculoController::class, 'EliminarVehiculo'])->name('vehiculos.EliminarVehiculo');
+
+    // Ruta existente de tu Dashboard
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Rutas del módulo de Promociones
+    Route::get('/promociones/create', [PromocionController::class, 'create'])->name('promociones.create');
+    Route::post('/promociones', [PromocionController::class, 'store'])->name('promociones.store');
 });

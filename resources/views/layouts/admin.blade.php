@@ -9,7 +9,30 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow mb-4">
         <div class="container">
-            <a class="navbar-brand" href="#">Corrientes Rent</a>
+            <a class="navbar-brand font-weight-bold" href="#">Corrientes Rent</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto"> {{-- ms-auto empuja las opciones a la derecha --}}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active fw-bold' : '' }}" 
+                           href="{{ route('admin.dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-car-front-fill me-1"></i> Vehículos
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
         </div>
     </nav>
 
