@@ -12,20 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reservas', function (Blueprint $table) {
-            $table->string('nro_reserva', 10)->primary();
+            $table->id('nro_reserva'); // PK autoincremental
             $table->date('fecha_inicio');
+            $table->time('hora_inicio');
             $table->date('fecha_devolucion');
-            $table->date('hra_inicio');
-            $table->date('hra_devolucion');
+            $table->time('hora_devolucion');
             $table->decimal('precio_total', 10, 2);
             $table->string('estado');
 
-            // Claves Foráneas (FK)
-            $table->string('nro_patente', 10)->nullable(); // Nro Patente, nullable si aplica
-    
-            // Restricciones de Clave Foránea
-            $table->foreign('nro_patente')->references('nro_patente')->on('vehiculos')->onDelete('set null');
-                        
+            // FKs obligatorias de tu gráfico:
+            $table->foreignId('dni_cliente')->constrained('clientes', 'dni_cliente');
+            $table->string('nro_patente'); // Al ser string en tu DER, se referencia de forma manual
+            $table->foreign('nro_patente')->references('nro_patente')->on('vehiculos');
+            
+            // FK opcional (Nullable) si no se aplica promoción
+            $table->foreignId('id_promocion')->nullable()->constrained('promociones', 'id_promocion');
+            
             $table->timestamps();
         });
     }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Promocion;
+use App\Models\Promociones;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -48,7 +48,7 @@ class PromocionController extends Controller
         ]);
 
         // Persistimos en la tabla utilizando Eloquent ORM
-        Promocion::create([
+        Promociones::create([
             'nombre_promo' => $dataValida['nombre_promo'],
             'fecha_inicio' => $dataValida['fecha_inicio'],
             'fecha_fin'    => $dataValida['fecha_fin'],

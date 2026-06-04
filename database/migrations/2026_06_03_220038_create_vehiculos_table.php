@@ -31,13 +31,7 @@ return new class extends Migration
                   ->references('id_sucursal') // <--- Apunta a tu PK personalizada
                   ->on('sucursales')
                   ->onDelete('set null');
-
-            // Relación con Usuarios (Asegúrate que en 'users' la PK sea 'id_usuario')
-            $table->unsignedBigInteger('id_usuario')->nullable();
-            $table->foreign('id_usuario')
-                  ->references('id_usuario') // <--- Apunta a tu PK personalizada
-                  ->on('users')
-                  ->onDelete('set null');
+           
 
             // Agrega la línea para el borrado lógico
             $table->softDeletes();

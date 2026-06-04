@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reserva; // Asegúrate de que el modelo Reserva exista e interactúe con tu tabla
+use App\Models\Reservas; // Asegúrate de que el modelo Reserva exista e interactúe con tu tabla
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -52,7 +52,7 @@ class DashboardController extends Controller
     private function obtenerDemandaPorPeriodo(int $anio): array
     {
         // Agrupamos y contamos las reservas de la base de datos para el año seleccionado
-        $demanda = Reserva::select(
+        $demanda = Reservas::select(
                 DB::raw('MONTH(fecha_inicio) as mes'),
                 DB::raw('COUNT(*) as total')
             )

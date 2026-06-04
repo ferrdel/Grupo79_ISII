@@ -26,8 +26,13 @@ class Vehiculos extends Model
         'descripcion',
         'litros_combustible',
         'id_sucursal',
-        'id_usuario',
     ];
+
+    // Relación inversa: Un vehículo pertenece a una sucursal
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursales::class, 'id_sucursal', 'id_sucursal');
+    }
 
     /**
      * Regla de negocio analizada por la prueba unitaria.

@@ -26,7 +26,8 @@
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link {{ request()->routeIs('vehiculos.index') ? 'active fw-bold' : '' }}" 
+                           href="{{ route('vehiculos.index') }}">
                             <i class="bi bi-car-front-fill me-1"></i> Vehículos
                         </a>
                     </li>
