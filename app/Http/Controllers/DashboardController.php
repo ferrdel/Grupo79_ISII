@@ -24,24 +24,50 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // Capturamos el año del filtro o por defecto el año actual
-        $this->anioAnalisis = $request->input('anio', date('Y'));
+        // Capturamos el año seleccionado del filtro (2026 por defecto)
+        $anio = $request->input('anio', 2026);
 
-        // 1. Ejecutamos la operación: obtenerDemandaPorPeriodo
-        $datosDemanda = $this->obtenerDemandaPorPeriodo($this->anioAnalisis);
+        // 1. Conteo Total General (El que ya te marca 27)
+        $totalReservas = Reservas::whereYear('fecha_inicio', $anio)->count();
 
-        // 2. Ejecutamos la operación: identificarMesesCriticos
-        $mesesCriticos = $this->identificarMesesCriticos($datosDemanda);
+        // 2. OBTENER RESERVAS AGRUPADAS POR MES (Revisa esta consulta)
+        // Usamos 'fecha_inicio' que es el campo real de tu DER y tu lote SQL
+        $reservasPorMes = Reservas::select(
+                            DB::raw('MONTH(fecha_inicio) as mes'),
+                            DB::raw('COUNT(*) as cantidad')
+                        )
+                        ->whereYear('fecha_inicio', $anio)
+                        ->groupBy(DB::raw('MONTH(fecha_inicio)'))
+                        ->pluck('cantidad', 'mes')
+                        ->toArray();
 
-        // Nombres abreviados de los meses para las etiquetas de Chart.js
-        $nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        // Inicializamos los 12 meses en 0 para mapear el gráfico limpio
+        $datosGrafico = array_fill(1, 12, 0);
+        $mesesBajaDemanda = [];
+        $umbralMinimo = 2; // Ejemplo: menos de 2 reservas es alerta crítica
 
-        // Retornamos la vista inyectando las 4 variables que el frontend necesita
+        for ($m = 1; $m <= 12; $m++) {
+            // Si el mes tiene reservas en la DB, se las asignamos
+            if (isset($reservasPorMes[$m])) {
+                $datosGrafico[$m] = $reservasPorMes[$m];
+            }
+
+            // Si las reservas de ese mes no superan el umbral, va a alerta
+            if ($datosGrafico[$m] < $umbralMinimo) {
+                $mesesBajaDemanda[] = $m;
+            }
+        }
+
+        $mesesEnAlerta = count($mesesBajaDemanda);
+        $nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
         return view('admin.dashboard', [
-            'anio' => $this->anioAnalisis,
-            'reporteFinal' => array_values($datosDemanda), // Devuelve solo los totales [10, 2, 4...]
-            'mesesBajaDemanda' => $mesesCriticos,
-            'nombresMeses' => $nombresMeses
+            'totalReservas' => $totalReservas,
+            'mesesEnAlerta' => $mesesEnAlerta,
+            'mesesBajaDemanda' => $mesesBajaDemanda,
+            'datosGrafico' => array_values($datosGrafico), // Pasa los datos limpios al JS [4, 3, 2, 2, 1...]
+            'nombresMeses' => $nombresMeses,
+            'anio' => $anio
         ]);
     }
 

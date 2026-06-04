@@ -30,7 +30,7 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="font-size: 0.75rem; font-weight: 700;">Total Reservas del Año</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ array_sum($reporteFinal) }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $totalReservas }}</div>
                         </div>
                     </div>
                 </div>
@@ -109,15 +109,9 @@
         
     </div>
 </div>
-@endsection {{-- AQUÍ TERMINA DEFINITIVAMENTE EL BLOQUE HTML DE LA VISTA --}}
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{{-- 
-  BLOQUE DE COMPORTAMIENTO JAVASCRIPT:
-  Laravel tomará todo este bloque y lo enviará automáticamente al final del layout base, 
-  justo en la posición del @stack('scripts'), manteniendo limpio el HTML superior.
---}}
-@push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Enlazamos el script al canvas mediante su ID único
@@ -125,21 +119,22 @@
         
         // Conversión e inyección segura de las variables procesadas en Laravel a JSON legible por JS
         const nombresMeses = {!! json_encode($nombresMeses) !!}; 
-        const datosReservas = {!! json_encode($reporteFinal) !!}; 
+        const datosReservas = {!! json_encode($datosGrafico) !!}; 
 
-        // Inicialización y configuración estratega del gráfico de barras
-        new Chart(ctx, {
-            type: 'bar',
+        // 2. Renderizado de Chart.js
+        // REVISA ESTA SECCIÓN: Asegúrate de que apunte a las constantes que definiste arriba
+        const miGrafico = new Chart(ctx, {
+            type: 'line', // Gráfico de línea
             data: {
-                labels: nombresMeses,
+                labels: nombresMeses, // Usa el arreglo de nombres (Enero, Febrero...)
                 datasets: [{
-                    label: 'Cantidad de Alquileres',
-                    data: datosReservas,
-                    backgroundColor: 'rgba(13, 110, 253, 0.15)', // Color Celeste/Azul corporativo sutil
-                    borderColor: 'rgba(13, 110, 253, 1)',      // Línea sólida de las barras
+                    label: 'Cantidad de Reservas',
+                    data: datosReservas, // ¡REVISA ESTA LÍNEA! Debe decir datosReservas
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 2,
-                    borderRadius: 4,                             // Redondeado estético de barras
-                    hoverBackgroundColor: 'rgba(13, 110, 253, 0.3)'
+                    tension: 0.3, // Le da la curvatura suave a la línea del historial
+                    fill: true
                 }]
             },
             options: {
@@ -147,25 +142,14 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false // Ocultamos leyenda para una UI limpia
+                        display: false // Mantiene tu UI limpia sin leyendas flotantes
                     }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            display: false // Sin líneas molestas de fondo verticales
-                        }
-                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1, // Escala de enteros puros (las reservas no son decimales)
-                            font: {
-                                size: 11
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.04)' // Rejilla horizontal muy sutil
+                            stepSize: 1 // Fuerza a que el eje Y muestre números enteros (1, 2, 3 reservas)
                         }
                     }
                 }
@@ -173,4 +157,7 @@
         });
     });
 </script>
-@endpush
+
+@endsection {{-- AQUÍ TERMINA DEFINITIVAMENTE EL BLOQUE HTML DE LA VISTA --}}
+
+
