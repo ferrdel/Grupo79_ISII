@@ -7,6 +7,9 @@ use App\Models\Reservas; // Asegúrate de que el modelo Reserva exista e interac
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Services\Strategies\AlertaEstrictaStrategy;
+use App\Services\Strategies\AlertaPermisivaStrategy;
+
 class DashboardController extends Controller
 {
     // Atributos de la clase encapsulados (como diseñamos en la estructura de la clase)
@@ -40,10 +43,19 @@ class DashboardController extends Controller
                         ->groupBy(DB::raw('MONTH(fecha_inicio)'))
                         ->pluck('cantidad', 'mes')
                         ->toArray();
+        
+        // Intercambiamos dinámicamente el algoritmo según un filtro del frontend o por defecto
+        $modoAnalisis = $request->input('modo', 'permisivo');
+        
+        $estrategia = ($modoAnalisis === 'estricto') 
+            ? new AlertaEstrictaStrategy() 
+            : new AlertaPermisivaStrategy();
 
         // Inicializamos los 12 meses en 0 para mapear el gráfico limpio
         $datosGrafico = array_fill(1, 12, 0);
-        $mesesBajaDemanda = [];
+        // El controlador delega la ejecución del algoritmo a la estrategia elegida
+        $mesesBajaDemanda = $estrategia->calcularMesesCriticos($reservasPorMes);
+
         $umbralMinimo = 2; // Ejemplo: menos de 2 reservas es alerta crítica
 
         for ($m = 1; $m <= 12; $m++) {
