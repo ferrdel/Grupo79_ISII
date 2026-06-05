@@ -18,9 +18,16 @@ Route::prefix('admin')->group(function () {
     Route::delete('/vehiculos/{nro_patente}', [VehiculoController::class, 'EliminarVehiculo'])->name('vehiculos.EliminarVehiculo');
 
     // Ruta existente de tu Dashboard
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     
     // Rutas del módulo de Promociones
-    Route::get('/promociones/create', [PromocionController::class, 'create'])->name('promociones.create');
+    Route::get('/promociones/create', [PromocionController::class, 'RegistrarPromocion'])->name('promociones.create');
     Route::post('/promociones', [PromocionController::class, 'store'])->name('promociones.store');
+
+    // Rutas para Modificar
+    Route::get('/promociones/{id}/edit', [PromocionController::class, 'edit'])->name('promociones.edit');
+    Route::put('/promociones/{id}', [PromocionController::class, 'ModificarPromocion'])->name('promociones.update');
+    
+    // Ruta para Eliminar
+    Route::delete('/promociones/{id}', [PromocionController::class, 'EliminarPromocion'])->name('promociones.destroy');
 });

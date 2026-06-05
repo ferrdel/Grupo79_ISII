@@ -86,7 +86,7 @@
         <!-- Botones de Acción -->
         <div class="d-flex justify-content-end gap-2">
             <a href="{{ route('admin.dashboard') }}" class="btn btn-light px-4 borderfw-bold">Cancelar</a>
-            <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Guardar y Activar Promoción</button>
+            <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Guardar y Activar</button>
         </div>
     </form>
 </div>

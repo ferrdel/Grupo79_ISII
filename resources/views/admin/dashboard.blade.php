@@ -91,7 +91,7 @@
                                         <small class="text-danger">Reservas por debajo del umbral mínimo</small>
                                     </div>
                                     <a href="{{ route('promociones.create', ['mes' => $numMes, 'anio' => $anio]) }}" class="btn btn-sm btn-outline-danger">
-                                        Lanzar Promo
+                                        Lanzar Promo de Temporada
                                     </a>
                                 </div>
                             @endforeach
@@ -158,6 +158,56 @@
     });
 </script>
 
-@endsection {{-- AQUÍ TERMINA DEFINITIVAMENTE EL BLOQUE HTML DE LA VISTA --}}
+<div class="card shadow-sm border-0 rounded-3 mt-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="m-0 fw-bold text-dark">Promociones Vigentes</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Nombre</th>
+                        <th>Vigencia</th>
+                        <th class="text-center">Descuento</th>
+                        <th class="text-end pe-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse(\App\Models\Promociones::all() as $promo)
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">{{ $promo->nombre_promo }}</td>
+                        <td>{{ date('d/m/Y', strtotime($promo->fecha_inicio)) }} al {{ date('d/m/Y', strtotime($promo->fecha_fin)) }}</td>
+                        <td class="text-center"><span class="badge bg-danger fs-6">-{{ $promo->descuento * 100 }}%</span></td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{{ route('promociones.edit', $promo->id_promocion) }}" class="btn btn-sm btn-outline-primary fw-bold">
+                                    Editar
+                                </a>
+
+                                <form action="{{ route('promociones.destroy', $promo->id_promocion) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta promoción?')">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    {{--faltaria implementar el mensaje luego de la confirmacion al precionar aceptar--}}
+
+                                    <button type="submit" class="btn btn-sm btn-danger fw-bold">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center text-muted p-4">No hay promociones activas actualmente en el sistema.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@endsection 
+
 
 
