@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Promociones extends Model
 {
+    use SoftDeletes;
     protected $table = 'promociones'; 
     protected $primaryKey = 'id_promocion';
 
@@ -13,7 +15,6 @@ class Promociones extends Model
         'nombre_promo',
         'fecha_inicio',
         'fecha_fin',
-        'descuento',
-        'estado'
+        'descuento'
     ];
 }

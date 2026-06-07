@@ -45,7 +45,12 @@ class VehiculoController extends Controller
     // Eliminar vehículo
     public function EliminarVehiculo($nro_patente)
     {
-        Vehiculos::findOrFail($nro_patente)->delete();
+        // Buscamos el auto por su patente (fuerza el ModelNotFoundException si no existe)
+        $vehiculo = Vehiculos::where('nro_patente', $nro_patente)->firstOrFail();
+        
+        // Cambiamos el estado tal como lo pide tu contrato de operación
+        $vehiculo->delete();
+                
         return redirect()->back()->with('success', 'Vehículo eliminado.');
     }
 }

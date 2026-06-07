@@ -119,9 +119,8 @@ class PromocionController extends Controller
 
     public function EliminarPromocion($id_promocion)
     {
-        // Eliminación limpia usando la fachada
         $this->promocionFacade->eliminarPromocion($id_promocion);
-
+                
         return redirect()->route('admin.dashboard')->with('exito', 'Promoción dada de baja.');
     }
 
