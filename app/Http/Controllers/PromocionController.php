@@ -51,24 +51,33 @@ class PromocionController extends Controller
     public function store(Request $request)
     {
         // Validamos estrictamente los datos que vienen del frontend
-        $request->validate([
-            'nombre_promo' => 'required|string|max:255',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin'    => 'required|date|after_or_equal:fecha_inicio',
-            'descuento'    => 'required|numeric|min:0|max:100',
-        ]);
+            $request->validate([
+                'nombre_promo' => ['required','string','max:255',
+                // Valida que sea único, pero ignora los registros que ya tengan deleted_at (bajas lógicas)
+                \Illuminate\Validation\Rule::unique('promociones')->whereNull('deleted_at')
+            ],
+                'fecha_inicio' => 'required|date',
+                'fecha_fin'    => 'required|date|after_or_equal:fecha_inicio',
+                'descuento'    => 'required|numeric|min:0|max:100',
+            ]);
 
-        // Uso de la fachada: Una sola línea limpia que orquesta todo el subsistema por detrás
-        $this->promocionFacade->crearYActivar([
-            'nombre_promo' => $request->nombre_promo,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_fin'    => $request->fecha_fin,
-            'descuento'    => $request->descuento / 100,
-            'estado'       => 'Activo'
-        ]);
+        try {
+            // En tu método de creación, asegurate de no mapear el ID manualmente
+            $datos = $request->except('id_promocion');
+            
+            // Si pasa la validación, procedés a crearla a través de la Fachada
+            $this->promocionFacade->crearYActivar($datos);
 
-        // Redireccionamos de vuelta al Dashboard con un mensaje de éxito para Bootstrap
-        return redirect()->route('admin.dashboard')->with('exito', '¡Promoción creada y auditada con éxito!');  
+            //  LA SOLUCIÓN QUIRÚRGICA: Forzamos el mensaje en la sesión flash global
+            session()->flash('success', '¡Promoción creada con éxito!');
+
+            // Redireccionamos de vuelta al Dashboard con un mensaje de éxito para Bootstrap
+            return redirect()->route('admin.dashboard');
+
+        } catch (\Exception $e) {
+            // Captura el mensaje "Ya existe una promoción activa para este mes" y lo devuelve limpio
+            return redirect()->back()->withInput()->withErrors(['error_promocion' => $e->getMessage()]);
+        }         
     }
 
     /**
@@ -101,27 +110,50 @@ class PromocionController extends Controller
             'descuento'    => 'required|numeric|min:0|max:100',
         ]);
 
-        $promocion = Promociones::findOrFail($id);
-        
-        // Actualizamos usando asignación masiva
-        $promocion->update([
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_fin'    => $request->fecha_fin,
-            'descuento'    => $request->descuento / 100, // Volvemos a guardar como float (0.20)
-            'gps_gratis'   => $request->has('gps_gratis'),
-            'silla_bebe_descuento' => $request->has('silla_bebe_descuento'),
-            'conductor_gratis' => $request->has('conductor_gratis'),
-        ]);
+        try {
+            $promocion = Promociones::findOrFail($id);
+            
+            // Actualizamos usando asignación masiva
+            $promocion->update([
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_fin'    => $request->fecha_fin,
+                'descuento'    => $request->descuento / 100, // Volvemos a guardar como float (0.20)
+                'gps_gratis'   => $request->has('gps_gratis'),
+                'silla_bebe_descuento' => $request->has('silla_bebe_descuento'),
+                'conductor_gratis' => $request->has('conductor_gratis'),
+            ]);
 
-        return redirect()->route('admin.dashboard')->with('exito', '¡Promoción modificada con éxito!');
+            // En tu función update(), reemplazá el return por estas dos líneas:
+            session()->flash('success', '¡Promoción modificada con éxito!');
+
+            return redirect()->route('admin.dashboard');
+
+        } catch (\Exception $e) {
+            // Si algo falla, vuelve al formulario de edición mostrando el error arriba
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error_promocion' => $e->getMessage()]);
+        }
+
+        
     }
   
 
     public function EliminarPromocion($id_promocion)
     {
-        $this->promocionFacade->eliminarPromocion($id_promocion);
+        try {
+            $this->promocionFacade->eliminarPromocion($id_promocion);
+
+            // 3. Forzamos el mensaje de éxito en la sesión flash global para el Dashboard
+            session()->flash('success', 'Promoción Eliminada.');
                 
-        return redirect()->route('admin.dashboard')->with('exito', 'Promoción dada de baja.');
+            return redirect()->route('admin.dashboard');
+        
+        } catch (\Exception $e) {
+            // Si algo falla, volvemos atrás mostrando el motivo técnico
+            return redirect()->back()->withErrors(['error_promocion' => 'No se pudo eliminar la promoción: ' . $e->getMessage()]);
+        }
+        
     }
 
 }

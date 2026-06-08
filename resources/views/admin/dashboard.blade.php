@@ -2,6 +2,18 @@
 
 @section('content')
 <div class="container-fluid px-4 py-3">
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-left: 5px solid #198754;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+                <div>
+                    <strong>¡Actualizado!</strong> {{ session('success') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 pb-2 border-bottom">
         <div>
@@ -22,7 +34,7 @@
             </form>
         </div>
     </div>
-
+   
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card h-100 border-start border-primary border-4 shadow-sm bg-white border-0">
@@ -188,8 +200,6 @@
                                 <form action="{{ route('promociones.destroy', $promo->id_promocion) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta promoción?')">
                                     @csrf
                                     @method('DELETE')
-
-                                    {{--faltaria implementar el mensaje luego de la confirmacion al precionar aceptar--}}
 
                                     <button type="submit" class="btn btn-sm btn-danger fw-bold">Eliminar</button>
                                 </form>

@@ -8,6 +8,18 @@
         <h2 class="fw-bold text-dark m-0">Nueva Promoción: {{ $nombreMes }} - Impulso de Demanda</h2>
     </div>
 
+    @if ($errors->has('error_promocion'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #dc3545;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
+                <div>
+                    <strong></strong> {{ $errors->first('error_promocion') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- El formulario apunta a la ruta 'store' para guardar los datos en MySQL -->
     <form action="{{ route('promociones.store') }}" method="POST" class="bg-white p-4 rounded-3 shadow-sm border">
         @csrf <!-- Token de seguridad obligatorio de Laravel para formularios POST -->

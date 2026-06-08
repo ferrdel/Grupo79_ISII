@@ -4,11 +4,23 @@
 <div class="container-fluid p-4">
     <h2 class="fw-bold text-dark mb-4">Modificar Promoción: {{ $nombreMes }}</h2>
 
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #198754;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+                <div>
+                    <strong>¡Éxito!</strong> {{ session('success') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form action="{{ route('promociones.update', $promocion->id_promocion) }}" method="POST" class="bg-white p-4 rounded-3 shadow-sm border">
         @csrf
         @method('PUT') <div class="mb-4">
             <label class="form-label fw-bold text-secondary">Nombre de la Promoción</label>
-            <input type="text" class="form-control fw-bold" value="{{ $promocion->nombre_promo }}" readonly style="background-color: #f8f9fa;">
+            <input type="text" class="form-control fw-bold" value="{{ old('nombre_promo', $promocion->nombre_promo) }}" readonly style="background-color: #f8f9fa;">
         </div>
 
         <div class="row mb-4">

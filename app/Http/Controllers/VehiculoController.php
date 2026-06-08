@@ -19,7 +19,7 @@ class VehiculoController extends Controller
     public function RegistrarVehiculo(Request $request)
     {
         $datos = $request->validate([
-            'nro_patente' => 'required|unique:vehiculos',
+            'nro_patente' => 'required|unique:vehiculos,nro_patente',
             'marca'       => 'required',
             'modelo'      => 'required',
             'precio'      => 'required|numeric',
@@ -28,10 +28,22 @@ class VehiculoController extends Controller
             'kilometros'  => 'required|integer',
             'estado'      => 'required',
             'litros_combustible' => 'required|integer',
+        ], [
+            // Personalizamos el mensaje exacto en español para tu entrega
+            'nro_patente.unique' => 'El número de patente ya se encuentra registrado!',
+            'nro_patente.required' => 'La patente es campo obligatorio.',
         ]);
 
-        Vehiculos::create($datos);
-        return redirect()->back()->with('success', 'Vehículo agregado correctamente.');
+        try {
+            Vehiculos::create($datos);
+            session()->flash('success', 'Vehículo agregado correctamente.');
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+            ->withInput()
+            ->withErrors(['error_vehiculo' => 'Error al guardar un Vehiculo: ' . $e->getMessage()]);
+        }
     }
 
     // Actualizar vehículo

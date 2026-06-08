@@ -15,6 +15,7 @@ class Promociones extends Model
         'nombre_promo',
         'fecha_inicio',
         'fecha_fin',
-        'descuento'
+        'descuento',
+        'estado',
     ];
 }

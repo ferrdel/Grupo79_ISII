@@ -18,15 +18,19 @@ return new class extends Migration
             $table->date('fecha_fin');
             $table->decimal('descuento', 5, 2);
             $table->string('estado');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('promociones');
+        Schema::table('vehiculos', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+
+        Schema::table('promociones', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };
