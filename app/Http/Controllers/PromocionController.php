@@ -50,16 +50,37 @@ class PromocionController extends Controller
      */
     public function store(Request $request)
     {
+        
+        $inicio = Carbon::parse($request->input('fecha_inicio'));
+        $fin = Carbon::parse($request->input('fecha_fin'));
+
+        // CONTROL CRONOLÓGICO
+        if ($inicio->greaterThan($fin)) {
+            // Guardamos el error de forma persistente para la próxima pantalla
+            session()->flash('error_critico', 'La fecha inicio no puede ser mayor a la fecha fin');
+            return redirect()->back()->withInput();
+        }
+
+        // CONTROL DE MES
+        if ($inicio->month !== $fin->month || $inicio->year !== $fin->year) {
+            session()->flash('error_critico', 'Las fechas deben corresponder estrictamente al mismo mes y año.');
+            return redirect()->back()->withInput();
+        }
+
         // Validamos estrictamente los datos que vienen del frontend
-            $request->validate([
-                'nombre_promo' => ['required','string','max:255',
-                // Valida que sea único, pero ignora los registros que ya tengan deleted_at (bajas lógicas)
-                \Illuminate\Validation\Rule::unique('promociones')->whereNull('deleted_at')
-            ],
-                'fecha_inicio' => 'required|date',
-                'fecha_fin'    => 'required|date|after_or_equal:fecha_inicio',
-                'descuento'    => 'required|numeric|min:0|max:100',
+        $request->validate([
+            'nombre_promo' => ['required','string','max:255',
+            // Valida que sea único, pero ignora los registros que ya tengan deleted_at (bajas lógicas)
+            \Illuminate\Validation\Rule::unique('promociones')->whereNull('deleted_at')
+        ],
+            'fecha_inicio' => 'required|date',
+            'fecha_fin'    => 'required|date|after_or_equal:fecha_inicio',
+            'descuento'    => 'required|numeric|min:0|max:100',
+        ], [
+            'fecha_fin.after_or_equal' => '¡Error! La fecha de fin no puede ser menor a la fecha de inicio.',
             ]);
+        
+                 
 
         try {
             // En tu método de creación, asegurate de no mapear el ID manualmente
@@ -75,8 +96,9 @@ class PromocionController extends Controller
             return redirect()->route('admin.dashboard');
 
         } catch (\Exception $e) {
-            // Captura el mensaje "Ya existe una promoción activa para este mes" y lo devuelve limpio
-            return redirect()->back()->withInput()->withErrors(['error_promocion' => $e->getMessage()]);
+
+            // Volvemos atrás manteniendo los inputs llenos
+            return redirect()->back()->withInput();
         }         
     }
 
@@ -104,6 +126,22 @@ class PromocionController extends Controller
      */
     public function ModificarPromocion(Request $request, $id)
     {
+        $inicio = Carbon::parse($request->input('fecha_inicio'));
+        $fin = Carbon::parse($request->input('fecha_fin'));
+
+        // CONTROL CRONOLÓGICO
+        if ($inicio->greaterThan($fin)) {
+            // Guardamos el error de forma persistente para la próxima pantalla
+            session()->flash('error_critico', 'La fecha inicio no puede ser mayor a la fecha fin');
+            return redirect()->back()->withInput();
+        }
+
+        // CONTROL DE MES
+        if ($inicio->month !== $fin->month || $inicio->year !== $fin->year) {
+            session()->flash('error_critico', 'Las fechas deben corresponder estrictamente al mismo mes y año.');
+            return redirect()->back()->withInput();
+        }
+
         $request->validate([
             'fecha_inicio' => 'required|date',
             'fecha_fin'    => 'required|date|after_or_equal:fecha_inicio',
@@ -151,7 +189,7 @@ class PromocionController extends Controller
         
         } catch (\Exception $e) {
             // Si algo falla, volvemos atrás mostrando el motivo técnico
-            return redirect()->back()->withErrors(['error_promocion' => 'No se pudo eliminar la promoción: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error_promocion' => $e->getMessage()]);
         }
         
     }

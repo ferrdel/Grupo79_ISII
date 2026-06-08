@@ -1,24 +1,28 @@
 @extends('layouts.admin')
 
 @section('content')
+
+@if (session()->has('error_critico'))
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-left: 5px solid #dc3545;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
+            <div>
+                <strong></strong> {{ session('error_critico') }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+
 <div class="container-fluid p-4">
-    
+      
     <!-- Título dinámico según el botón que presionaste -->
     <div class="d-flex align-items-center mb-4">
         <h2 class="fw-bold text-dark m-0">Nueva Promoción: {{ $nombreMes }} - Impulso de Demanda</h2>
     </div>
 
-    @if ($errors->has('error_promocion'))
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="border-left: 5px solid #dc3545;">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
-                <div>
-                    <strong></strong> {{ $errors->first('error_promocion') }}
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+
 
     <!-- El formulario apunta a la ruta 'store' para guardar los datos en MySQL -->
     <form action="{{ route('promociones.store') }}" method="POST" class="bg-white p-4 rounded-3 shadow-sm border">
@@ -108,5 +112,42 @@
     function actualizarDescuento(valor) {
         document.getElementById('descuentoInput').value = valor;
     }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Leemos los valores que Laravel devolvió al formulario usando old()
+    const nombrePromo = "{{ old('nombre_promo') }}";
+    const fechaInicio = "{{ old('fecha_inicio') }}";
+    const fechaFin = "{{ old('fecha_fin') }}";
+
+    // 2. Si hay datos viejos en la pantalla, significa que el controlador rebotó la carga por un error
+    if (nombrePromo || fechaInicio || fechaFin) {
+        
+        // Creamos un contenedor elegante de Bootstrap 5 dinámicamente
+        const contenedorAlerta = document.createElement('div');
+        contenedorAlerta.className = "alert alert-danger alert-dismissible fade show shadow-sm mb-4";
+        contenedorAlerta.setAttribute('role', 'alert');
+        contenedorAlerta.style.borderLeft = "5px solid #dc3545";
+        
+        // Metemos el mensaje de negocio de forma explícita
+        contenedorAlerta.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
+                <div>
+                    <strong></strong> El mes ya tiene una promoción activa.
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        // 3. Inyectamos el cartel arriba de todo en tu contenedor principal
+        // Buscamos el título o el inicio del contenedor para pegarlo justo ahí
+        const contenedorPrincipal = document.querySelector('.container-fluid') || document.querySelector('.container');
+        if (contenedorPrincipal) {
+            contenedorPrincipal.insertBefore(contenedorAlerta, contenedorPrincipal.firstChild);
+        }
+    }
+});
 </script>
 @endsection

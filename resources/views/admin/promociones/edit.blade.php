@@ -16,6 +16,18 @@
         </div>
     @endif
 
+    @if (session()->has('error_critico'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-left: 5px solid #dc3545;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
+                <div>
+                    <strong></strong> {{ session('error_critico') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form action="{{ route('promociones.update', $promocion->id_promocion) }}" method="POST" class="bg-white p-4 rounded-3 shadow-sm border">
         @csrf
         @method('PUT') <div class="mb-4">
