@@ -14,33 +14,38 @@ class PromocionFacade
      */
     public function crearYActivar(array $datos): Promociones
     {
-        //  EXTRAER EL MES CORRECTAMENTE:
-        // Convertimos la "fecha_inicio" que viene del formulario a un objeto de Carbon para saber su mes
-        // (Ajustá 'fecha_inicio' si tu input del HTML se llama diferente, por ejemplo 'fecha_desde')
-        $mesSeleccionado = Carbon::parse($datos['fecha_inicio'])->month; 
-        $anioSeleccionado = Carbon::parse($datos['fecha_inicio'])->year;
+        // 1. Convertimos a Carbon una sola vez
+        $inicio = Carbon::parse($datos['fecha_inicio']);
+        $fin = Carbon::parse($datos['fecha_fin']);
 
-        // 2. BUSCAR SOLAPAMIENTOS EN ESE PERÍODO:
-        // Verificamos si ya existe una promoción activa en el mismo mes y año
-        $existe = Promociones::whereMonth('fecha_inicio', $mesSeleccionado)
-                            ->whereYear('fecha_inicio', $anioSeleccionado)
+        // 2. PRIMER ESCUDO (Local): Validar consistencia cronológica
+        if ($inicio->greaterThan($fin)) {
+            throw new \Exception("La fecha inicio no puede ser mayor a la fecha fin");
+        }
+
+        // 3. SEGUNDO ESCUDO (Local): Control de período (Mismo mes y año)
+        if ($inicio->month !== $fin->month || $inicio->year !== $fin->year) {
+            throw new \Exception("¡Control de Período: Las fechas deben corresponder estrictamente al mismo mes y año!");
+        }
+
+        // 4. TERCER ESCUDO (Base de Datos): Buscar solapamientos usando las variables existentes
+        $existe = Promociones::whereMonth('fecha_inicio', $inicio->month)
+                            ->whereYear('fecha_inicio', $inicio->year)
                             ->where('estado', 'Activa')
                             ->exists();
         
         if ($existe) {
-            // Acá personalizás el texto exacto que va a viajar a la pantalla
-            throw new Exception("¡Ya existe una promoción para este mes !");
+            throw new \Exception("¡Ya existe una promoción para este mes !");
         }
 
+        // 5. Preparación e Inserción
         $datos['estado'] = 'Activa';
-
-        //  Persistencia en la Base de Datos MySQL
         $promocion = Promociones::create($datos);
 
-        //  Registro automático en el Subsistema de Auditoría/Seguridad
+        // 6. Subsistema de Auditoría
         Log::info("AUDITORÍA: El administrador activó una nueva promoción ID: {$promocion->id_promocion} - Nombre: {$promocion->nombre_promo}");
 
-        // Operación en el Subsistema de Rendimiento (Limpieza de Caché de vistas)
+        // 7. Subsistema de Rendimiento
         Cache::forget('promociones_activas_home');
 
         return $promocion;
