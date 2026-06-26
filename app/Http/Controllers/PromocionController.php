@@ -129,9 +129,8 @@ class PromocionController extends Controller
         $inicio = Carbon::parse($request->input('fecha_inicio'));
         $fin = Carbon::parse($request->input('fecha_fin'));
 
-        // CONTROL CRONOLÓGICO
+        // Controles de consistencia rápidos para la UX
         if ($inicio->greaterThan($fin)) {
-            // Guardamos el error de forma persistente para la próxima pantalla
             session()->flash('error_critico', 'La fecha inicio no puede ser mayor a la fecha fin');
             return redirect()->back()->withInput();
         }
@@ -148,50 +147,23 @@ class PromocionController extends Controller
             'descuento'    => 'required|numeric|min:0|max:100',
         ]);
 
+        // Recolectamos todos los datos del formulario web
+        $datos = $request->all();
+
         try {
-            $promocion = Promociones::findOrFail($id);
-            
-            // Actualizamos usando asignación masiva
-            $promocion->update([
-                'fecha_inicio' => $request->fecha_inicio,
-                'fecha_fin'    => $request->fecha_fin,
-                'descuento'    => $request->descuento / 100, // Volvemos a guardar como float (0.20)
-                'gps_gratis'   => $request->has('gps_gratis'),
-                'silla_bebe_descuento' => $request->has('silla_bebe_descuento'),
-                'conductor_gratis' => $request->has('conductor_gratis'),
-            ]);
+            // 💡 LA SOLUCIÓN: Despachamos la operación a través de la Fachada de forma consistente
+            $this->promocionFacade->modificarPromocion($id, $datos);
 
-            // En tu función update(), reemplazá el return por estas dos líneas:
+            // Forzamos el mensaje de éxito en la sesión flash global de Bootstrap
             session()->flash('success', '¡Promoción modificada con éxito!');
-
             return redirect()->route('admin.dashboard');
 
         } catch (\Exception $e) {
-            // Si algo falla, vuelve al formulario de edición mostrando el error arriba
+            // Si la Fachada detecta un mes duplicado o error, volvemos atrás mostrando el motivo técnico
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error_promocion' => $e->getMessage()]);
-        }
-
-        
-    }
-  
-
-    public function EliminarPromocion($id_promocion)
-    {
-        try {
-            $this->promocionFacade->eliminarPromocion($id_promocion);
-
-            // 3. Forzamos el mensaje de éxito en la sesión flash global para el Dashboard
-            session()->flash('success', 'Promoción Eliminada.');
-                
-            return redirect()->route('admin.dashboard');
-        
-        } catch (\Exception $e) {
-            // Si algo falla, volvemos atrás mostrando el motivo técnico
-            return redirect()->back()->withErrors(['error_promocion' => $e->getMessage()]);
-        }
-        
+        }        
     }
 
 }

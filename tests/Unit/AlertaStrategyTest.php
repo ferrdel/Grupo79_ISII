@@ -27,7 +27,7 @@ class AlertaStrategyTest extends TestCase
     }
 
     /**
-     * VERIFICACIÓN 2: Probar el comportamiento de intercambio del algoritmo.
+     * Probar el comportamiento de intercambio del algoritmo.
      * Si cambiamos los datos y un mes supera el umbral, la estrategia debe excluirlo.
      */
     public function test_estrategia_estricta_excluye_meses_que_superan_el_minimo_de_reservas()

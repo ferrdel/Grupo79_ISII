@@ -20,7 +20,7 @@ class VehiculoUnitTest extends TestCase
      */
     public function test_vehiculo_con_campos_vacios_no_es_valido_para_registro()
     {
-        // 1. Datos de entrada (Arrange): Instanciamos un objeto con atributos vacíos según el CP_Ag1
+        // 1. Datos de entrada: Instanciamos un objeto con atributos vacíos según el CP_Ag1
         $vehiculoVacio = new Vehiculos([
             'nro_patente'        => '',
             'marca'              => '',
@@ -46,7 +46,7 @@ class VehiculoUnitTest extends TestCase
      */
     public function test_vehiculo_con_datos_completos_es_valido_para_registro()
     {
-        // 1. Datos de entrada (Arrange): Cargamos el Peugeot 206 idéntico a tu caso CP_Ag3
+        // 1. Datos de entrada 
         $vehiculoValido = new Vehiculos([
             'nro_patente'        => 'EEE333',
             'marca'              => 'Peugeot',
@@ -68,11 +68,11 @@ class VehiculoUnitTest extends TestCase
 
     /**
      * PRUEBA UNITARIA 3 (Asociada a CP_Ag5):
-     * Verifica que el sistema rechace el registro si la patente ingresada ya existe en el listado del sistema.
+     * Verifica que el sistema rechaza el registro si la patente ingresada ya existe en el listado del sistema.
      */
     public function test_vehiculo_con_patente_existente_no_es_valido_para_registro()
     {
-        // 1. Datos de entrada (Arrange): Simulamos un listado de patentes que YA están registradas en CorrientesRent
+        // 1. Datos de entrada: Simulamos un listado de patentes que YA están registrada
         $patentesExistentes = ['EEE333', 'AAA111', 'BBB222'];
 
         // Instanciamos el Peugeot 206 de tu caso CP_Ag5 con la patente duplicada 'EEE333'
@@ -95,14 +95,11 @@ class VehiculoUnitTest extends TestCase
         $this->assertFalse($resultadoObtenido);
     }
 
-    /* =========================================================================
-       PRUEBAS UNITARIAS: DAR DE BAJA VEHÍCULO (eliminarVehiculo)
-       ========================================================================= */
-
-    /** @test */
+    
+    /** PRUEBAS UNITARIAS DAR DE BAJA VEHÍCULO*/
     public function unidad_se_puede_dar_de_baja_un_vehiculo_existente()
     {
-        // 1. Arrange (Precondición: El vehículo existe en la base de datos)
+        
         $vehiculo = Vehiculos::create([
             'nro_patente' => 'ABC321',
             'marca'       => 'Fiat',
@@ -118,10 +115,10 @@ class VehiculoUnitTest extends TestCase
         // Instanciamos el controlador directamente de forma unitaria
         $controlador = new VehiculoController();
 
-        // 2. Act (Llamamos directamente a la función del controlador encargada de la eliminación)
+        //Llamamos directamente a la función del controlador encargada de la eliminación
         $controlador->EliminarVehiculo($vehiculo->nro_patente);
 
-        // 3. Assert (Postcondición: El vehículo mutó su estado a "inactivo")
+        // El vehículo cambia a estado  "inactivo")
         $this->assertSoftDeleted('vehiculos', [
             'nro_patente' => 'ABC321'
         ]);
@@ -130,27 +127,21 @@ class VehiculoUnitTest extends TestCase
     /** @test */
     public function unidad_lanzar_excepcion_si_se_intenta_dar_de_baja_un_vehiculo_inexistente()
     {
-        // 1. Arrange (Excepción: El vehículo no existe)
+        // Excepción: El vehículo no existe
         $patenteInexistente = 'XYZ999';
         $controlador = new VehiculoController();
 
-        // Le avisamos a PHPUnit que esperamos que el código falle con una excepción 404 (ModelNotFoundException)
-        // Esto pasa si en tu controlador usás Vehiculo::findOrFail($id)
         $this->expectException(ModelNotFoundException::class);
 
-        // 2. Act (Ejecutamos la acción que va a forzar el fallo)
+        // acción que va a forzar el fallo
         $controlador->EliminarVehiculo($patenteInexistente);
     }
 
 
-    /* =========================================================================
-       PRUEBAS UNITARIAS: MODIFICAR DATOS DEL VEHÍCULO (modificarVehiculo)
-       ========================================================================= */
-
-    /** @test */
+    /** PRUEBAS UNITARIAS: MODIFICAR DATOS DEL VEHÍCULO */
     public function unidad_se_pueden_modificar_los_datos_de_un_vehiculo_existente()
     {
-        // 1. Arrange (Precondición: El vehículo existe originalmente)
+        //El vehículo existe originalmente)
         $vehiculo = Vehiculos::create([
             'nro_patente' => 'DEF456',
             'marca'       => 'Fiat',
@@ -176,11 +167,10 @@ class VehiculoUnitTest extends TestCase
 
         $controlador = new VehiculoController();
 
-        // 2. Act (Invocamos directo al método del controlador pasándole el Request y el ID)
-        // Nota: Si tu método se llama 'ActualizarVehiculo' o 'update', corregilo acá:
+        // Invocamos directo al método del controlador pasándole el Request y el ID)
         $controlador->ActualizarVehiculo($request, $vehiculo->nro_patente);
 
-        // 3. Assert (Postcondición: Los datos se actualizaron correctamente en el sistema)
+        //Postcondición: Los datos se actualizaron correctamente en el sistema
         $this->assertDatabaseHas('vehiculos', [
             'nro_patente' => 'DEF456',
             'marca'       => 'Toyota',
@@ -193,15 +183,14 @@ class VehiculoUnitTest extends TestCase
     /** @test */
     public function unidad_lanzar_excepcion_si_se_intenta_modificar_un_vehiculo_inexistente()
     {
-        // 1. Arrange
+        
         $patenteInexistente = 'ERR777';
         $request = new Request(['marca' => 'Ford']);
         $controlador = new VehiculoController();
 
-        // Esperamos que falle con la excepción de Eloquent al no encontrar la patente
+        // Esperamos que falle con la excepción al no encontrar la patente
         $this->expectException(ModelNotFoundException::class);
 
-        // 2. Act
         $controlador->ActualizarVehiculo($request, $patenteInexistente);
     }
 

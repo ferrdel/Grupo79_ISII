@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservas; // Asegúrate de que el modelo Reserva exista e interactúe con tu tabla
+use App\Models\Reservas; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,7 +12,6 @@ use App\Services\Strategies\AlertaPermisivaStrategy;
 
 class DashboardController extends Controller
 {
-    // Atributos de la clase encapsulados (como diseñamos en la estructura de la clase)
     private $fechaGeneracion;
     private $anioAnalisis;
     private $umbralCriticoBajaDemanda = 5; // Umbral metodológico: menos de 5 reservas es baja demanda
@@ -30,11 +29,10 @@ class DashboardController extends Controller
         // Capturamos el año seleccionado del filtro (2026 por defecto)
         $anio = $request->input('anio', 2026);
 
-        // 1. Conteo Total General (El que ya te marca 27)
+        
         $totalReservas = Reservas::whereYear('fecha_inicio', $anio)->count();
 
-        // 2. OBTENER RESERVAS AGRUPADAS POR MES (Revisa esta consulta)
-        // Usamos 'fecha_inicio' que es el campo real de tu DER y tu lote SQL
+        // OBTENER RESERVAS AGRUPADAS POR MES
         $reservasPorMes = Reservas::select(
                             DB::raw('MONTH(fecha_inicio) as mes'),
                             DB::raw('COUNT(*) as cantidad')
@@ -56,7 +54,7 @@ class DashboardController extends Controller
         // El controlador delega la ejecución del algoritmo a la estrategia elegida
         $mesesBajaDemanda = $estrategia->calcularMesesCriticos($reservasPorMes);
 
-        $umbralMinimo = 2; // Ejemplo: menos de 2 reservas es alerta crítica
+        $umbralMinimo = 5; // Ejemplo: menos de 2 reservas es alerta crítica
 
         for ($m = 1; $m <= 12; $m++) {
             // Si el mes tiene reservas en la DB, se las asignamos

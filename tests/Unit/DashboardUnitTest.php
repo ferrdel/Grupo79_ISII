@@ -13,17 +13,13 @@ class DashboardUnitTest extends TestCase
     // Usamos RefreshDatabase para mantener el entorno de laboratorio limpio
     use RefreshDatabase;
 
-    /* =========================================================================
-       PRUEBAS: PATRÓN ESTRATEGIA (Algoritmos de Alerta del Dashboard)
-       ========================================================================= */
-
+    
     /** @test */
     public function unidad_estrategia_estricta_detecta_mes_critico_cuando_supera_el_limite()
     {
-        // 1. Arrange: Instanciamos tu algoritmo
         $estrategia = new AlertaEstrictaStrategy();
         
-        // Creamos un escenario donde todos los meses tienen buena actividad (10 reservas),
+        // escenario donde todos los meses tienen buena actividad (10 reservas),
         // excepto Julio (7), que tiene una caída crítica con solo 2 reservas.
         $datosMensuales = [
             1  => 15, 
@@ -32,7 +28,7 @@ class DashboardUnitTest extends TestCase
             4  => 14, 
             5  => 11, 
             6  => 13,
-            7  => 2,  // <--- Menor a 5: Tu algoritmo lo DEBE capturar como crítico
+            7  => 4,  
             8  => 10, 
             9  => 14, 
             10 => 11, 
@@ -40,11 +36,11 @@ class DashboardUnitTest extends TestCase
             12 => 5
         ];
 
-        // 2. Act: Ejecutamos tu método pasando el array por parámetro
+        
         $resultado = $estrategia->calcularMesesCriticos($datosMensuales);
 
-        // 3. Assert: Verificamos que tu lógica haya atrapado correctamente al mes 7
-        $this->assertContains(7, $resultado, 'La estrategia estricta no reconoció a Julio como crítico a pesar de tener menos de 5 reservas.');
+        // 3. Assert: Verificamos que haya atrapado correctamente al mes 7
+        $this->assertContains(7, $resultado, 'La estrategia no reconoció a Julio como crítico a pesar de tener menos de 5 reservas.');
         
         // Verificación extra: Enero (1) no debería ser crítico porque tiene 15 reservas
         $this->assertNotContains(1, $resultado);
@@ -53,7 +49,7 @@ class DashboardUnitTest extends TestCase
     /** @test */
     public function unidad_estrategia_permisiva_es_mas_tolerante_con_los_picos_de_demanda()
     {
-        // 1. Arrange: Instanciamos la estrategia permisiva
+        // Instanciamos la estrategia permisiva
         $estrategia = new AlertaPermisivaStrategy();
         
         // Un volumen intermedio que la estrategia estricta rechazaría, pero la permisiva tolera
@@ -63,7 +59,6 @@ class DashboardUnitTest extends TestCase
             8 => 30, 9 => 30, 10 => 30, 11 => 30, 12 => 30
         ];
 
-        // 2. Act
         $resultado = $estrategia->calcularMesesCriticos($datosMensuales);
 
         // 3. Assert: Comprobamos que bajo este escenario moderado, la lista de alertas vuelve vacía
@@ -79,14 +74,13 @@ class DashboardUnitTest extends TestCase
     {
         // Creamos un clon virtual (Mock) del controlador, pero dejamos que ejecute index() real
         $controlador = $this->getMockBuilder(DashboardController::class)
-                            ->onlyMethods([]) // No bloqueamos métodos a menos que sea necesario
+                            ->onlyMethods([]) 
                             ->getMock();
         
         // Creamos un request básico simulando el parámetro
         $request = new \Illuminate\Http\Request(['modo' => 'estricto']);
 
         // Como SQLite no soporta MONTH(), capturamos la excepción esperada de la base de datos
-        // Esto le demuestra a los profesores que validaste la incompatibilidad de motores
         $this->expectException(\Illuminate\Database\QueryException::class);
 
         $controlador->index($request);
